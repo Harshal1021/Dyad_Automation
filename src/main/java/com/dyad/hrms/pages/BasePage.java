@@ -3,6 +3,7 @@ package com.dyad.hrms.pages;
 import com.dyad.hrms.config.Config;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -43,7 +44,8 @@ public abstract class BasePage {
     /** WebElement.clear() does not reliably update the Vue model, so the text is selected and deleted. */
     protected void type(By locator, String text) {
         WebElement input = waitForVisible(locator);
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"), Keys.DELETE);
+        Keys selectAllModifier = Platform.getCurrent().is(Platform.MAC) ? Keys.COMMAND : Keys.CONTROL;
+        input.sendKeys(Keys.chord(selectAllModifier, "a"), Keys.DELETE);
         input.sendKeys(text);
     }
 
