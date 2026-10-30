@@ -6,6 +6,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ public abstract class BasePage {
 
     private static final By LOADER = By.cssSelector(".oxd-form-loader, .oxd-loading-spinner");
     private static final By TOAST_MESSAGE = By.cssSelector(".oxd-toast .oxd-text--toast-message");
+    private static final By APP_ROOT = By.id("app");
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final WebDriver driver;
@@ -33,12 +35,12 @@ public abstract class BasePage {
 
     protected WebElement waitForVisible(By locator) {
         waitForLoadersToFinish();
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        return waitFor(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     protected void click(By locator) {
         waitForLoadersToFinish();
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+        waitFor(ExpectedConditions.elementToBeClickable(locator)).click();
     }
 
     /** WebElement.clear() does not reliably update the Vue model, so the text is selected and deleted. */
@@ -52,8 +54,23 @@ public abstract class BasePage {
     /** Forms render empty and are filled in after an API call, so this waits for a value to arrive. */
     protected String waitForValue(By locator) {
         waitForVisible(locator);
-        wait.until(d -> !d.findElement(locator).getDomProperty("value").isBlank());
+        waitFor(d -> !d.findElement(locator).getDomProperty("value").isBlank());
         return driver.findElement(locator).getDomProperty("value");
+    }
+
+    /**
+     * Waits for a condition, reloading if the shared demo site served a server error page. Such a page
+     * has no application root, so failures inside the application are never reloaded away.
+     */
+    protected <T> T waitFor(ExpectedCondition<T> condition) {
+        return wait.until(d -> {
+            if (d.findElements(APP_ROOT).isEmpty()) {
+                log.warn("Application did not load at {}, reloading", d.getCurrentUrl());
+                d.navigate().refresh();
+                return null;
+            }
+            return condition.apply(d);
+        });
     }
 
     protected void waitForLoadersToFinish() {

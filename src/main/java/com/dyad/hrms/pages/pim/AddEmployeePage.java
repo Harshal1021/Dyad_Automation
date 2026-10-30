@@ -44,7 +44,7 @@ public class AddEmployeePage extends BasePage {
     @Step("Save the new employee")
     public void save() {
         click(SAVE);
-        wait.until(ExpectedConditions.or(
+        waitFor(ExpectedConditions.or(
                 ExpectedConditions.visibilityOfElementLocated(PERSONAL_DETAILS_HEADER),
                 ExpectedConditions.visibilityOfElementLocated(DUPLICATE_ID_ERROR)));
     }
