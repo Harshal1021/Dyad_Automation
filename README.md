@@ -118,6 +118,8 @@ generates a different one.
   - The site can pre-fill an ID that is already taken. It rejects that on save, so the test reads a
     fresh ID and retries, up to 3 attempts.
   - A failed run deletes its employee in `@AfterClass`.
+  - The site occasionally serves an HTTP 500 page. Waits reload only when the application failed to
+    load at all, so failures inside the application still fail the test.
 - Waits are explicit only. The implicit wait stays at 0 and there are no sleeps.
 - There is no automatic test retry, because it would hide real flakiness. Failures caused by the
   demo site being slow or unavailable can be addressed by raising `timeout.seconds`.
